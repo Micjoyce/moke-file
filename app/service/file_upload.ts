@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Service } from 'egg';
 import { badRequest } from '@hapi/boom';
 import * as path from 'path';
