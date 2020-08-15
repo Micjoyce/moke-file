@@ -12,6 +12,8 @@ export interface File extends BaseModel {
   size: number;
   type: string;
   bucketName: string;
+  width: number;
+  height: number;
 }
 
 

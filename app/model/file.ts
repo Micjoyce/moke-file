@@ -15,6 +15,8 @@ export default (app: Application) => {
       size: Number,
       type: String,
       bucketName: String,
+      width: { type: Number, default: 0 },
+      height: { type: Number, default: 0 },
       deleted: { type: Boolean, default: false },
     },
     {

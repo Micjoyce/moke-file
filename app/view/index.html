@@ -24,6 +24,9 @@
         <h3 id="status"></h3>
         <p id="loaded_n_total"></p>
       </div>
+      <div id="thumbnails">
+
+      </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
@@ -56,8 +59,13 @@
       }
 
       function completeHandler(event) {
-        _("status").innerHTML = event.target.responseText;
+        var responseText = event.target.responseText;
+        var responseJson = JSON.parse(responseText)
+        _("status").innerHTML = responseText;
         _("progressBar").value = 0; //wil clear progress bar after successful upload
+        var img = document.createElement('img'); 
+        img.src = responseJson.thumbnailUrl;
+        _("thumbnails").appendChild(img); 
       }
 
       function errorHandler(event) {

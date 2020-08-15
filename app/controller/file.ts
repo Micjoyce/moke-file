@@ -5,15 +5,16 @@ export default class FileController extends Controller {
   async upload() {
     const ctx = this.ctx;
     const file = ctx.request.files[0];
-    const downloadUrl = await ctx.service.fileUpload.upload(
-      file.filepath,
-      file.filename,
-      file.mime,
-    );
+    const size = await ctx.service.fileUpload.getImgSize(file.filepath)
+    const result = await ctx.service.fileUpload.upload({
+      file: file.filepath,
+      filename: file.filename,
+      type: file.mime,
+      width: size.width,
+      height: size.height
+    });
     ctx.cleanupRequestFiles()
-    ctx.body = {
-      downloadUrl,
-    };
+    ctx.body = result
   }
 
   @validateBySchema({
@@ -30,8 +31,6 @@ export default class FileController extends Controller {
     const fileKey = ctx.params.fileKey;
     try {
       const { file, stream } = await ctx.service.fileUpload.download(fileKey);
-      ctx.set('Cache-Control', 'public, max-age=600');
-      ctx.set('Content-Disposition', 'inline');
       ctx.set('Content-Length', String(file.size));
       ctx.set('Content-Type', file.type || 'application/octet-stream');
       ctx.body = stream;
@@ -58,12 +57,9 @@ export default class FileController extends Controller {
     const { fileKey, w, h } = ctx.params;
     const width = Number(w)
     const height = Number(h)
-    console.info(width, height)
     try {
-      const { file, stream } = await ctx.service.fileUpload.download(fileKey);
-      ctx.set('Cache-Control', 'public, max-age=600');
-      ctx.set('Content-Disposition', 'inline');
-      ctx.set('Content-Length', String(file.size));
+      const { size, file, stream } = await ctx.service.fileUpload.thumbnail(fileKey, width, height);
+      ctx.set('Content-Length', String(size));
       ctx.set('Content-Type', file.type || 'application/octet-stream');
       ctx.body = stream;
       return;

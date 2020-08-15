@@ -68,7 +68,6 @@ export default (appInfo: EggAppInfo) => {
     fileExtensions: ['.jpg','.jpeg','.png','.gif','.pdf','.xlsx','.docx', '.doc', '.pptx' ]
   }
 
-  config.bucketName = 'moke-file'
   config.minioOptions = {
     endPoint: '127.0.0.1',
     port: 9000,
