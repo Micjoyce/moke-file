@@ -5,10 +5,9 @@ import * as _ from 'lodash';
 import { Readable } from 'stream';
 
 export default class FileUploadService extends Service {
-  private getFileKey(filename: string) {
-    const extname = path.extname(filename).toLocaleLowerCase();
+  private getFileKey(_: string) {
     return {
-      fileKey: this.ctx.helper.getRandomId() + extname,
+      fileKey: this.ctx.helper.getRandomId(),
     };
   }
 
@@ -32,21 +31,34 @@ export default class FileUploadService extends Service {
     }
   }
 
-  async upload(file: string | Readable, filename: string) {
+  async upload(file: string | Readable, filename: string, type: string) {
+    const { ctx } = this;
+    const bucketName = this.getBucketName(filename);
     const { fileKey } = this.getFileKey(filename);
-    const bucketName = this.getBucketName(fileKey);
+    const newFilename = fileKey
     await this.ensureBucketExist(bucketName);
     const minioClient = this.ctx.getMinioClient(bucketName);
     try {
       if (_.isString(file)) {
-        await minioClient.fPutObject(bucketName, fileKey, file, {});
+        await minioClient.fPutObject(bucketName, newFilename, file, {});
       } else {
-        await minioClient.putObject(bucketName, fileKey, file);
+        await minioClient.putObject(bucketName, newFilename, file);
       }
     } catch (error) {
-      this.logger.error(`upload ${fileKey} error ${error}`);
+      this.logger.error(`upload ${filename} error ${error}`);
     }
-    return this.getDownloadUrl(fileKey);
+    const stat = await this.tryStatObject(bucketName, newFilename);
+    if (!stat) {
+      throw badRequest('Upload error');
+    }
+    // save
+    await ctx.service.file.create({
+      fileKey,
+      type,
+      size: stat.size,
+      bucketName,
+    })
+    return this.getDownloadUrl(newFilename);
   }
 
   private async tryStatObject(bucketName: string, objectName: string) {
@@ -59,17 +71,22 @@ export default class FileUploadService extends Service {
     }
   }
 
-  async download(filename: string) {
-    const bucketName = this.getBucketName(filename);
-    const minioClient = this.ctx.getMinioClient(bucketName);
-    const stat = await this.tryStatObject(bucketName, filename);
-    if (!stat) {
-      throw badRequest(`Not found file ${filename}`);
+  async download(fileKey: string) {
+    const { ctx } = this;
+    const file = await ctx.service.file.findOneByFileKey(fileKey)
+    if (!file) {
+      throw badRequest('Not found file')
     }
-    const stream = await minioClient.getObject(bucketName, filename);
+    const bucketName = file.bucketName;
+    const minioClient = this.ctx.getMinioClient(bucketName);
+    const stat = await this.tryStatObject(bucketName, fileKey);
+    if (!stat) {
+      throw badRequest(`Not found file ${fileKey}`);
+    }
+    const stream = await minioClient.getObject(bucketName, fileKey);
     return {
+      file,
       stream,
-      size: stat.size,
     };
   }
 }

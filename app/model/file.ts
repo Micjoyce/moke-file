@@ -14,7 +14,7 @@ export default (app: Application) => {
       fileKey: String,
       size: Number,
       type: String,
-      bucket: String,
+      bucketName: String,
       deleted: { type: Boolean, default: false },
     },
     {

@@ -1,4 +1,6 @@
 import { EggAppConfig, EggAppInfo, PowerPartial } from 'egg';
+import * as path from 'path';
+import * as os from 'os';
 
 export default (appInfo: EggAppInfo) => {
   const config = {} as PowerPartial<EggAppConfig>;
@@ -55,6 +57,13 @@ export default (appInfo: EggAppInfo) => {
   config.maxIpsCount = 1;
 
   config.multipart = {
+    mode: 'file',
+    tmpdir: path.join(os.tmpdir(), 'multipart-tmp', appInfo.name),
+    cleanSchedule: {
+      // run tmpdir clean job on every day 04:30 am
+      // cron style see https://github.com/eggjs/egg-schedule#cron-style-scheduling
+      cron: '0 30 4 * * *',
+    },
     fileSize: '500mb',
     fileExtensions: ['.jpg','.jpeg','.png','.gif','.pdf','.xlsx','.docx', '.doc', '.pptx' ]
   }

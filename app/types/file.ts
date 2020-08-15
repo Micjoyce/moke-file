@@ -11,7 +11,7 @@ export interface File extends BaseModel {
   fileKey: string;
   size: number;
   type: string;
-  bucket: string;
+  bucketName: string;
 }
 
 

@@ -1,8 +1,7 @@
 import { Context } from 'egg';
 
 export default {
-  getMinioClient(this: Context, bucketName: string) {
-    console.info(bucketName)
+  getMinioClient(this: Context, _: string) {
     return this.app.minio;
   },
 };

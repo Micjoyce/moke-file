@@ -8,6 +8,6 @@ export default (app: Application) => {
   router.post('/upload', controller.file.upload);
   // 文件下载
   router.get('/file/:fileKey', controller.file.download);
-  router.get('/thumbnail/:fileKey', controller.file.download);
+  router.get('/thumbnail/:fileKey/w/:w/h/:h', controller.file.thumbnail);
 
 };
