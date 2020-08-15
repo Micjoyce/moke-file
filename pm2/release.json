@@ -1,0 +1,8 @@
+[{
+  "name": "moke-file",
+  "script": "./server.js",
+  "env": {
+    "NODE_ENV": "production",
+    "EGG_SERVER_ENV": "prod"
+  }
+}]

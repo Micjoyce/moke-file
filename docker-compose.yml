@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  mongo:
+    image: mongo:4.2.5
+    volumes:
+      - ${PWD}/.data/mongo:/data/db
+    ports:
+      - 27017:27017
+  redis:
+    image: redis:latest
+    volumes:
+      - ${PWD}/.data/redis:/data
+    ports:
+      - 6379:6379
+  minio:
+    image: minio/minio
+    ports:
+      - 9000:9000
+    environment:
+      - MINIO_ACCESS_KEY=1C586744E5BEC998
+      - MINIO_SECRET_KEY=2A66526385B486E7DA2E74F42BB64
+    volumes:
+      -  ${PWD}/.data/file:/data
+    command: server /data
