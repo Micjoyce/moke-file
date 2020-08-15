@@ -63,9 +63,11 @@
         var responseJson = JSON.parse(responseText)
         _("status").innerHTML = responseText;
         _("progressBar").value = 0; //wil clear progress bar after successful upload
-        var img = document.createElement('img'); 
-        img.src = responseJson.thumbnailUrl;
-        _("thumbnails").appendChild(img); 
+        if (responseJson.thumbnailUrl) {
+          var img = document.createElement('img'); 
+          img.src = responseJson.thumbnailUrl;
+          _("thumbnails").appendChild(img); 
+        }
       }
 
       function errorHandler(event) {
