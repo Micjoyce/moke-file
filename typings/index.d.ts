@@ -1,14 +1,5 @@
 import { MongooseModels, Application, Context } from 'egg';
 import { UserAgentContext } from 'koa-useragent';
-import { User } from '../app/types'
-
-interface ContextState {
-  user: User
-  userId: string
-  uid: string
-  username: string
-}
-
 
 declare module 'egg' {
   interface IModel extends MongooseModels {}
@@ -21,6 +12,5 @@ declare module 'egg' {
   // extend context
   interface Context extends UserAgentContext {
     model: IModel;
-    state: ContextState
   }
 }

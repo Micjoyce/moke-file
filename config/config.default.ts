@@ -55,7 +55,7 @@ export default (appInfo: EggAppInfo) => {
   config.maxIpsCount = 1;
 
   config.multipart = {
-    fileSize: '20mb',
+    fileSize: '500mb',
     fileExtensions: ['.jpg','.jpeg','.png','.gif','.pdf','.xlsx','.docx', '.doc', '.pptx' ]
   }
 
