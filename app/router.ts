@@ -9,5 +9,7 @@ export default (app: Application) => {
   // 文件下载
   router.get('/file/:fileKey', controller.file.download);
   router.get('/thumbnail/:fileKey/w/:w/h/:h', controller.file.thumbnail);
+  // 文件预览
+  router.get('/preview/:fileKey', controller.file.filePreview);
 
 };

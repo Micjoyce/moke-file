@@ -17,15 +17,16 @@
           type="file"
           class="form-control-file"
           id="file1"
-          accept=".jpg,.jpeg,.png,.gif,.pdf,.xlsx,.docx,.pptx,.doc"
+          accept="{{ accept }}"
           onchange="uploadFile()"
         >
         <progress id="progressBar" value="0" max="100" style="width:300px;"></progress>
         <h3 id="status"></h3>
         <p id="loaded_n_total"></p>
       </div>
+      <div id="previews">
+      </div>
       <div id="thumbnails">
-
       </div>
     </div>
 
@@ -67,6 +68,14 @@
           var img = document.createElement('img'); 
           img.src = responseJson.thumbnailUrl;
           _("thumbnails").appendChild(img); 
+        }
+        if (responseJson.previewUrl) {
+          var divDom = document.createElement('div'); 
+          var a = document.createElement('a'); 
+          a.href = responseJson.previewUrl;
+          a.innerHTML = responseJson.previewUrl;
+          divDom.appendChild(a);
+          _("previews").appendChild(divDom); 
         }
       }
 

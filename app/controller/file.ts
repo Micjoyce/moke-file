@@ -58,12 +58,36 @@ export default class FileController extends Controller {
     const width = Number(w);
     const height = Number(h);
     try {
-      const { size, file, stream } = await ctx.service.fileUpload.thumbnail(fileKey, width, height);
+      const { size, type, stream } = await ctx.service.fileUpload.thumbnail(fileKey, width, height);
       ctx.set('Content-Length', String(size));
-      ctx.set('Content-Type', file.type || 'application/octet-stream');
+      ctx.set('Content-Type', type || 'application/octet-stream');
       ctx.body = stream;
       return;
     } catch (error) {
+      ctx.status = 404;
+      return;
+    }
+  }
+  @validateBySchema({
+    params: {
+      type: 'object',
+      properties: {
+        fileKey: { type: 'string' },
+      },
+      required: [ 'fileKey' ],
+    },
+  })
+  async filePreview() {
+    const { ctx } = this;
+    const { fileKey } = ctx.params;
+    try {
+      const { size, type, stream } = await ctx.service.fileUpload.filePreview(fileKey);
+      ctx.set('Content-Length', String(size));
+      ctx.set('Content-Type', type || 'application/octet-stream');
+      ctx.body = stream;
+      return;
+    } catch (error) {
+      console.info(error);
       ctx.status = 404;
       return;
     }

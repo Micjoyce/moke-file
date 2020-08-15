@@ -6,8 +6,9 @@ import * as _ from 'lodash';
 import * as fs from 'fs';
 import * as gm from 'gm';
 import { Readable } from 'stream';
-import { extension } from 'mime-types';
+import { extension, lookup } from 'mime-types';
 import { file as tmpFile } from 'tmp-promise';
+import { dir } from 'tmp-promise';
 
 export default class FileUploadService extends Service {
   private getFileKey(_: string) {
@@ -20,14 +21,21 @@ export default class FileUploadService extends Service {
     return '/file/' + fileKey;
   }
 
-  private getThumbnailDownloadUrl(fileKey: string, width: number, height: number) {
+  private getThumbnailUrl(fileKey: string, width: number, height: number) {
     return `/thumbnail/${fileKey}/w/${width}/h/${height}`;
+  }
+
+  private getPreviewUrl(fileKey: string) {
+    return `/preview/${fileKey}`;
   }
 
   private getBucketName(filename: string) {
     const extname = path.extname(filename).toLocaleLowerCase();
     if (/^thumbnail/.test(filename)) {
       return 'thumbnail';
+    }
+    if (/^preview/.test(filename)) {
+      return 'preview';
     }
     if (this.config.multipart.fileExtensions?.includes(extname)) {
       return 'file';
@@ -46,7 +54,7 @@ export default class FileUploadService extends Service {
     if (!stat) {
       throw badRequest(`Not found file ${fileKey}`);
     }
-    return file;
+    return { file, stat };
   }
 
   async ensureBucketExist(bucketName: string) {
@@ -96,11 +104,13 @@ export default class FileUploadService extends Service {
     if (this.isImgFile(filename)) {
       return {
         downloadUrl: this.getDownloadUrl(newFilename),
-        thumbnailUrl: this.getThumbnailDownloadUrl(fileKey, 200, 200),
+        thumbnailUrl: this.getThumbnailUrl(fileKey, 200, 200),
+        previewUrl: this.getPreviewUrl(fileKey),
       };
     }
     return {
       downloadUrl: this.getDownloadUrl(newFilename),
+      previewUrl: this.getPreviewUrl(fileKey),
     };
   }
 
@@ -116,7 +126,7 @@ export default class FileUploadService extends Service {
 
   async download(fileKey: string) {
     const { ctx } = this;
-    const file = await this.ensureFileExist(fileKey);
+    const { file } = await this.ensureFileExist(fileKey);
     const minioClient = ctx.getMinioClient(file.bucketName);
     const stream = await minioClient.getObject(file.bucketName, fileKey);
     return {
@@ -151,7 +161,7 @@ export default class FileUploadService extends Service {
 
   async thumbnail(fileKey: string, width: number, height: number) {
     const { ctx } = this;
-    const file = await this.ensureFileExist(fileKey);
+    const { file } = await this.ensureFileExist(fileKey);
     const fileExtension = extension(file.type);
     const thumbnailFilename = `thumbnail_${fileKey}_${width}_${height}.${fileExtension}`;
     const bucketName = this.getBucketName(thumbnailFilename);
@@ -165,7 +175,7 @@ export default class FileUploadService extends Service {
         thumbnailFilename,
       );
       return {
-        file,
+        type: file.type,
         size: stat.size,
         stream: thumbnailStream,
       };
@@ -200,9 +210,74 @@ export default class FileUploadService extends Service {
     }
     const thumbnailStream = await thumbnailMinioClient.getObject(bucketName, thumbnailFilename);
     return {
-      file,
+      type: file.type,
       size: stat.size,
       stream: thumbnailStream,
     };
   }
+  async filePreview(fileKey: string) {
+    const { ctx } = this;
+    const { file, stat } = await this.ensureFileExist(fileKey);
+    const fileExtension = extension(file.type) as string;
+    if (this.isImgFile(`.${fileExtension}`)) {
+      return this.thumbnail(fileKey, file.width / 2, file.height / 2);
+    }
+    // pdf 直接返回数据
+    const minioClient = ctx.getMinioClient(file.bucketName);
+    if (fileExtension === 'pdf') {
+      const stream = await minioClient.getObject(file.bucketName, fileKey);
+      return {
+        type: lookup('.pdf'),
+        stream,
+        size: stat.size,
+      };
+    }
+
+    // 生成预览文件
+    const previewFilename = `preview_${fileKey}.pdf`;
+    const bucketName = this.getBucketName(previewFilename);
+    await this.ensureBucketExist(bucketName);
+    const preveiwMinioClient = this.ctx.getMinioClient(bucketName);
+
+    // check preview file exist
+    let previewStat = await this.tryStatObject(bucketName, previewFilename);
+    if (previewStat) {
+      const existPreviewStream = await preveiwMinioClient.getObject(
+        bucketName,
+        previewFilename,
+      );
+      return {
+        type: lookup('.pdf'),
+        size: previewStat.size,
+        stream: existPreviewStream,
+      };
+    }
+
+    // office to pdf
+    const tmpDir = await dir({ unsafeCleanup: true });
+    const rawFilepath = path.join(tmpDir.path, `${fileKey}.${fileExtension}`);
+    // save to local
+    await minioClient.fGetObject(file.bucketName, fileKey, rawFilepath);
+    const cmd = `soffice --headless --invisible --convert-to pdf ${rawFilepath}`;
+    const { stdout } = await ctx.helper.execCmd(cmd, { encoding: null, cwd: tmpDir.path });
+    const previewFilePath = stdout.split(' ').find(item => item.endsWith('.pdf'));
+    if (!previewFilePath) {
+      throw badRequest(`Create preview file error fileKey: ${fileKey}`);
+    }
+    // upload
+    await preveiwMinioClient.putObject(bucketName, previewFilename, fs.createReadStream(previewFilePath));
+    await tmpDir.cleanup();
+
+    previewStat = await this.tryStatObject(bucketName, previewFilename);
+    if (!previewStat) {
+      throw badRequest(`Not found preview file fileKey: ${fileKey}`);
+    }
+    const previewStream = await preveiwMinioClient.getObject(bucketName, previewFilename);
+    return {
+      type: lookup('.pdf'),
+      size: previewStat.size,
+      stream: previewStream,
+    };
+  }
+
 }
