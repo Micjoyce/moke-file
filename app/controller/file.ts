@@ -5,16 +5,16 @@ export default class FileController extends Controller {
   async upload() {
     const ctx = this.ctx;
     const file = ctx.request.files[0];
-    const size = await ctx.service.fileUpload.getImgSize(file.filepath)
+    const size = await ctx.service.fileUpload.getImgSize(file.filepath);
     const result = await ctx.service.fileUpload.upload({
       file: file.filepath,
       filename: file.filename,
       type: file.mime,
       width: size.width,
-      height: size.height
+      height: size.height,
     });
-    ctx.cleanupRequestFiles()
-    ctx.body = result
+    ctx.cleanupRequestFiles();
+    ctx.body = result;
   }
 
   @validateBySchema({
@@ -23,8 +23,8 @@ export default class FileController extends Controller {
       properties: {
         fileKey: { type: 'string' },
       },
-      required: [ 'fileKey' ]
-    }
+      required: [ 'fileKey' ],
+    },
   })
   async download() {
     const { ctx } = this;
@@ -49,14 +49,14 @@ export default class FileController extends Controller {
         w: { type: 'string' },
         h: { type: 'string' },
       },
-      required: [ 'fileKey', 'w', 'h' ]
-    }
+      required: [ 'fileKey', 'w', 'h' ],
+    },
   })
   async thumbnail() {
     const { ctx } = this;
     const { fileKey, w, h } = ctx.params;
-    const width = Number(w)
-    const height = Number(h)
+    const width = Number(w);
+    const height = Number(h);
     try {
       const { size, file, stream } = await ctx.service.fileUpload.thumbnail(fileKey, width, height);
       ctx.set('Content-Length', String(size));

@@ -1,7 +1,7 @@
 import { Application } from 'egg';
 import * as Ajv from 'ajv';
 import * as Minio from 'minio';
-import * as gm from 'gm'
+import * as gm from 'gm';
 
 const AJV = Symbol('Application#AJV');
 const MINIO = Symbol('Application#minio');
@@ -28,7 +28,7 @@ export default {
   },
   get imageMagick(): gm.SubClass {
     if (!this[GM_IMAGEMAGICK]) {
-      this[GM_IMAGEMAGICK] = gm.subClass({imageMagick: true});
+      this[GM_IMAGEMAGICK] = gm.subClass({ imageMagick: true });
     }
     return this[GM_IMAGEMAGICK];
   },

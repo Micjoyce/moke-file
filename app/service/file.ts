@@ -9,14 +9,14 @@ export default class UserService extends Service {
   // findOne
   async findOneByFileKey(fileKey: string) {
     return this.ctx.model.File.findOne(this.buildQuery({
-      fileKey
+      fileKey,
     }));
   }
   // find
   // create
   async create(file: FileCreateModel) {
-    const record = new this.ctx.model.File(file)
-    await record.save()
+    const record = new this.ctx.model.File(file);
+    await record.save();
     return record;
   }
   // delete
