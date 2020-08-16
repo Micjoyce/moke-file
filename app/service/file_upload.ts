@@ -219,18 +219,18 @@ export default class FileUploadService extends Service {
     const { ctx } = this;
     const { file, stat } = await this.ensureFileExist(fileKey);
     const fileExtension = extension(file.type) as string;
-    if (this.isImgFile(`.${fileExtension}`)) {
-      return this.thumbnail(fileKey, file.width / 2, file.height / 2);
-    }
     // pdf 直接返回数据
     const minioClient = ctx.getMinioClient(file.bucketName);
-    if (fileExtension === 'pdf') {
+    if ([ 'pdf', 'gif' ].includes(fileExtension)) {
       const stream = await minioClient.getObject(file.bucketName, fileKey);
       return {
-        type: lookup('.pdf'),
+        type: lookup(`.${fileExtension}`),
         stream,
         size: stat.size,
       };
+    }
+    if (this.isImgFile(`.${fileExtension}`)) {
+      return this.thumbnail(fileKey, file.width / 2, file.height / 2);
     }
 
     // 生成预览文件
