@@ -24,7 +24,7 @@ export default (appInfo: EggAppInfo) => {
 
   config.mongoose = {
     client: {
-      url: 'mongodb://127.0.0.1:27017/moke-file',
+      url: 'mongodb://192.168.1.3:27017/moke-file',
       options: {
         useUnifiedTopology: true,
       },
@@ -33,7 +33,7 @@ export default (appInfo: EggAppInfo) => {
 
   config.redis = {
     client: {
-      host: '127.0.0.1',
+      host: '192.168.1.3',
       port: 6379,
       password: '',
       db: 0,
@@ -81,7 +81,7 @@ export default (appInfo: EggAppInfo) => {
   };
 
   config.minioOptions = {
-    endPoint: '127.0.0.1',
+    endPoint: '192.168.1.3',
     port: 9000,
     useSSL: false,
     accessKey: '1C586744E5BEC998',

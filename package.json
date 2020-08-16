@@ -43,6 +43,8 @@
     "mime-types": "^2.1.27",
     "minio": "^7.0.16",
     "tmp-promise": "^3.0.2",
+    "tslib": "^2.0.1",
+    "typescript": "^3.9.7",
     "uuid": "^8.3.0"
   },
   "devDependencies": {
@@ -68,8 +70,7 @@
     "eslint-config-egg": "^8.0.1",
     "husky": "^4.2.5",
     "sneaky": "^2.0.1",
-    "standard-version": "^7.1.0",
-    "typescript": "^3.9.7"
+    "standard-version": "^7.1.0"
   },
   "husky": {
     "hooks": {
