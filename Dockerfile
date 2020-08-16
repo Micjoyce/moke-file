@@ -10,7 +10,7 @@ RUN npm config set registry http://registry.npm.taobao.org/
 RUN npm install --production
 
 FROM node:12.18.3-alpine
-LABEL maintainer="qiaomin <qiaomin@teambition.com>"
+LABEL maintainer="michael <micjoyce90@gmail.com>"
 
 RUN mkdir -p /app
 WORKDIR /app
