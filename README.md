@@ -4,14 +4,36 @@
 
 ## QuickStart
 
-### Preview
+### Docker compose
+
+#### Required
+
+Install [docker](https://docs.docker.com/engine/install/) and [docker-compose](https://docs.docker.com/compose/install/)
 
 ```bash
+git clone https://github.com/Micjoyce/moke-file.git
+docker-compose build
 docker-compose up -d
-open http://localhost:7001/
+
+# wait a moment
+open http://localhost:3000/
 ```
 
 ### Development
+
+#### Required
+
+Install soffice
+
+```bash
+sudo curl https://gist.githubusercontent.com/pankaj28843/3ad78df6290b5ba931c1/raw/soffice.sh > /usr/local/bin/soffice && sudo chmod +x /usr/local/bin/soffice
+```
+
+Install ImageMagick
+
+```bash
+brew install imagemagick
+```
 
 ```bash
 npm i

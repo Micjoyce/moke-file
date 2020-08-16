@@ -21,11 +21,11 @@
           onchange="uploadFile()"
         >
         <progress id="progressBar" value="0" max="100" style="width:300px;"></progress>
-        <h3 id="status"></h3>
+        <pre id="status"> </pre>
         <p id="loaded_n_total"></p>
       </div>
-      <div id="previews">
-      </div>
+      <ul id="previews">
+      </ul>
       <div id="thumbnails">
       </div>
     </div>
@@ -41,6 +41,9 @@
 
       function uploadFile() {
         var file = _("file1").files[0];
+        if (!file) {
+          return;
+        }
         var formdata = new FormData();
         formdata.append("file1", file);
         var ajax = new XMLHttpRequest();
@@ -62,19 +65,24 @@
       function completeHandler(event) {
         var responseText = event.target.responseText;
         var responseJson = JSON.parse(responseText)
-        _("status").innerHTML = responseText;
+        _("status").innerHTML = JSON.stringify(responseJson, null, 2);
         _("progressBar").value = 0; //wil clear progress bar after successful upload
         if (responseJson.thumbnailUrl) {
           var img = document.createElement('img'); 
           img.src = responseJson.thumbnailUrl;
+          img.className="img-thumbnail";
           _("thumbnails").appendChild(img); 
         }
         if (responseJson.previewUrl) {
           var divDom = document.createElement('div'); 
           var a = document.createElement('a'); 
+          var li = document.createElement('li'); 
+          li.className='list-group-item';
           a.href = responseJson.previewUrl;
           a.innerHTML = responseJson.previewUrl;
-          divDom.appendChild(a);
+          a.target='blank';
+          li.appendChild(a);
+          divDom.appendChild(li);
           _("previews").appendChild(divDom); 
         }
       }
